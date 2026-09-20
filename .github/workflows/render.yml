@@ -1,0 +1,37 @@
+name: Render course videos
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        section: [S0, S1, S2, S3, S4, S5, S6, S7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Install Playwright + Chromium
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Render ${{ matrix.section }} units
+        run: |
+          UNITS=$(grep -oP "\['${{ matrix.section }}-\d+'" course_data.js | tr -d "['" | tr '\n' ' ')
+          echo "Rendering: $UNITS"
+          python3 render_all.py $UNITS
+      - name: Upload MP4s
+        uses: actions/upload-artifact@v4
+        with:
+          name: videos-${{ matrix.section }}
+          path: out/*.mp4
+          retention-days: 30
+          if-no-files-found: error
