@@ -1,8 +1,122 @@
 (function(){
 const E = window.Engine;
 const { W,H,P,phase,easeOut,smooth,drawLabel,drawApple,drawHeadAndEye,drawCorneaArc,drawLens,drawRay,drawBrain,drawLattice,drawClouds,drawScatter,drawHazyScene,drawDevice,drawClinic,drawSectionIcon,setInk,hLine,hCircle,mulberry32,withAlpha } = E;
+function drawEyeAnatomy(ctx, cx, cy, R, opts){
+  const o = opts || {};
+  const a = o.alpha != null ? o.alpha : 1;
+  const showCornea = o.showCornea !== false;
+  const showIris   = o.showIris   !== false;
+  const showLens   = o.showLens   !== false;
+  const showRetina = o.showRetina !== false;
+  const showNerve  = o.showNerve  !== false;
 
-function unit_S0_01(ctx,t){
+  const INK = '#8b3a2e';
+  const INK_SOFT = '#b8705f';
+
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const aUL = Math.PI + 0.52;
+  const aLL = Math.PI - 0.52;
+
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 2.8;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, aUL, aLL, false);
+  ctx.stroke();
+
+  if(showCornea){
+    const ulX = cx + Math.cos(aUL)*R;
+    const ulY = cy + Math.sin(aUL)*R;
+    const llX = cx + Math.cos(aLL)*R;
+    const llY = cy + Math.sin(aLL)*R;
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.moveTo(ulX, ulY);
+    ctx.quadraticCurveTo(cx - R*1.35, cy, llX, llY);
+    ctx.stroke();
+  }
+
+  if(showIris){
+    const ulX = cx + Math.cos(aUL)*R;
+    const ulY = cy + Math.sin(aUL)*R;
+    const llX = cx + Math.cos(aLL)*R;
+    const llY = cy + Math.sin(aLL)*R;
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(ulX + R*0.08, ulY + R*0.06);
+    ctx.lineTo(cx - R*0.52, cy - R*0.16);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(llX + R*0.08, llY - R*0.06);
+    ctx.lineTo(cx - R*0.52, cy + R*0.16);
+    ctx.stroke();
+  }
+
+  if(showLens){
+    const antX  = cx - R*0.60;
+    const postX = cx - R*0.27;
+    const topY  = cy - R*0.41;
+    const botY  = cy + R*0.41;
+    const midX  = (antX + postX) / 2;
+
+    ctx.save();
+    ctx.globalAlpha = a * 0.55;
+    ctx.beginPath();
+    ctx.moveTo(antX, cy);
+    ctx.quadraticCurveTo(antX + R*0.02, topY + R*0.10, midX, topY);
+    ctx.quadraticCurveTo(postX - R*0.02, topY + R*0.10, postX, cy);
+    ctx.quadraticCurveTo(postX - R*0.02, botY - R*0.10, midX, botY);
+    ctx.quadraticCurveTo(antX + R*0.02, botY - R*0.10, antX, cy);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(antX, cy, postX, cy);
+    grad.addColorStop(0, 'rgba(232,184,176,0.95)');
+    grad.addColorStop(0.5, 'rgba(255,248,240,0.98)');
+    grad.addColorStop(1, 'rgba(216,180,168,0.90)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(antX, cy);
+    ctx.quadraticCurveTo(antX + R*0.02, topY + R*0.10, midX, topY);
+    ctx.quadraticCurveTo(postX - R*0.02, topY + R*0.10, postX, cy);
+    ctx.quadraticCurveTo(postX - R*0.02, botY - R*0.10, midX, botY);
+    ctx.quadraticCurveTo(antX + R*0.02, botY - R*0.10, antX, cy);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  if(showRetina){
+    ctx.strokeStyle = INK_SOFT;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R*0.90, -Math.PI*0.60, Math.PI*0.60, false);
+    ctx.stroke();
+  }
+
+  if(showNerve){
+    const ang = Math.PI * 0.10;
+    const sx = cx + Math.cos(ang) * R*0.95;
+    const sy = cy + Math.sin(ang) * R*0.95;
+    const ex = cx + Math.cos(ang) * R*1.55;
+    const ey = cy + Math.sin(ang) * R*1.55;
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}function unit_S0_01(ctx,t){
   const appleC = {x:900, y:580};
   const aIn = easeOut(phase(t,0,2.2));
   const aBlur = smooth(phase(t,10,5))*16;
