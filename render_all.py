@@ -44,6 +44,9 @@ async def main():
         browser = await pw.chromium.launch(args=['--no-sandbox','--disable-gpu','--disable-dev-shm-usage'])
         page = await browser.new_page(viewport={'width': W, 'height': H}, device_scale_factor=1)
         await page.goto(f'file://{ROOT}/render_mode.html')
+        override = ROOT / 's0_02_quality.js'
+        if override.exists():
+            await page.add_script_tag(path=str(override))
         await page.wait_for_timeout(400)
         units = await page.evaluate('Object.entries(window.COURSE).map(([id,u]) => [id, u.duration])')
         if WANTED:
